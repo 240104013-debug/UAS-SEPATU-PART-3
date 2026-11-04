@@ -70,7 +70,7 @@ export const Checkout: React.FC<CheckoutProps> = ({ onBackToCart, onOrderSuccess
 
       const items = cart.map(item => ({
         product_id: item.product.id,
-        product_name: `${item.product.name} (Size ${item.size}, ${item.color})`,
+        product_name: `${item.product.product_name || item.product.name} (Size ${item.size}, ${item.color})`,
         price: item.product.price,
         quantity: item.quantity,
         size: item.size,
@@ -433,15 +433,23 @@ export const Checkout: React.FC<CheckoutProps> = ({ onBackToCart, onOrderSuccess
             <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
               {cart.map((item) => (
                 <div key={item.id} className="flex items-center gap-3 text-xs">
-                  <img
-                    src={item.product.image_url}
-                    alt={item.product.name}
-                    className="w-12 h-12 rounded-lg object-cover bg-zinc-900 border border-zinc-800 shrink-0"
-                    referrerPolicy="no-referrer"
-                  />
+                  <div className="w-12 h-12 rounded-lg bg-zinc-900 border border-zinc-800 p-0.5 flex items-center justify-center shrink-0 overflow-hidden">
+                    {item.product.image_url ? (
+                      <img
+                        src={item.product.image_url}
+                        alt={item.product.product_name || item.product.name}
+                        className="w-full h-full object-contain"
+                        referrerPolicy="no-referrer"
+                      />
+                    ) : (
+                      <span className="text-[9px] text-zinc-500 text-center">No Img</span>
+                    )}
+                  </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-white truncate">{item.product.name}</p>
-                    <p className="text-zinc-400 text-[11px]">Size {item.size} · {item.color} · Qty {item.quantity}</p>
+                    <p className="font-bold text-white truncate">{item.product.product_name || item.product.name}</p>
+                    <p className="text-zinc-400 text-[11px]">
+                      {item.product.sku ? `[${item.product.sku}] ` : ''}Size {item.size} · {item.color} · Qty {item.quantity}
+                    </p>
                   </div>
                   <span className="font-mono font-bold text-white shrink-0">
                     {formatRupiah(item.product.price * item.quantity)}

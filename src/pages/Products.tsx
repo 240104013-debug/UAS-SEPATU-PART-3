@@ -1,21 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { Search, RefreshCcw, PackageX, Sparkles, ChevronLeft, ChevronRight, Grid, LayoutGrid, Check } from 'lucide-react';
+import { Search, RefreshCcw, PackageX, Sparkles, ChevronLeft, ChevronRight, Database, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { Product, Category } from '../types/database';
-import { getProducts, getCategories, isSupabaseConfigured, getActiveSupabaseCredentials } from '../lib/supabase';
+import { getProducts, getCategories, getActiveSupabaseCredentials } from '../lib/supabase';
 import { ProductCard } from '../components/ProductCard';
 
 interface ProductsPageProps {
   initialCategoryId?: string;
   initialBrand?: string;
   onViewProduct: (product: Product) => void;
+  onOpenSupabaseGuide?: () => void;
 }
 
 export const Products: React.FC<ProductsPageProps> = ({
   initialCategoryId,
   initialBrand,
-  onViewProduct
+  onViewProduct,
+  onOpenSupabaseGuide
 }) => {
   const [products, setProducts] = useState<Product[]>([]);
+  const [allProductsMaster, setAllProductsMaster] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -27,46 +30,33 @@ export const Products: React.FC<ProductsPageProps> = ({
   const [sortBy, setSortBy] = useState<'featured' | 'price-asc' | 'price-desc'>('featured');
 
   // Pagination controls
-  // By default: 'all' to show all 10 products directly as requested, or toggle pagination
   const [viewMode, setViewMode] = useState<'all' | 'paginated'>('all');
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const itemsPerPage = 8; // generous page size if paginated
+  const itemsPerPage = 8;
 
-  // Brands list
-  const brands = ['all', 'Nike', 'Adidas', 'Puma', 'Jordan', 'Under Armour'];
-
-  const { isLive } = getActiveSupabaseCredentials();
+  const { isLive, url } = getActiveSupabaseCredentials();
 
   const loadData = async () => {
     setLoading(true);
     setError(null);
     try {
-      const [allCats, allProds] = await Promise.all([
+      const [allCats, masterProds, filteredProds] = await Promise.all([
         getCategories(),
+        getProducts(),
         getProducts({
           categoryId: selectedCategory !== 'all' ? selectedCategory : undefined,
           brand: selectedBrand !== 'all' ? selectedBrand : undefined,
           searchQuery: searchQuery.trim() || undefined,
+          sortBy
         })
       ]);
 
       setCategories(allCats);
-
-      // Sort
-      let sorted = [...allProds];
-      if (sortBy === 'price-asc') {
-        sorted.sort((a, b) => a.price - b.price);
-      } else if (sortBy === 'price-desc') {
-        sorted.sort((a, b) => b.price - a.price);
-      } else {
-        // Featured first
-        sorted.sort((a, b) => (b.is_featured ? 1 : 0) - (a.is_featured ? 1 : 0));
-      }
-
-      setProducts(sorted);
-      setCurrentPage(1); // reset to page 1 on filter/search change
+      setAllProductsMaster(masterProds);
+      setProducts(filteredProds);
+      setCurrentPage(1);
     } catch (err: any) {
-      setError(err?.message || 'Gagal memuat katalog produk dari database');
+      setError(err?.message || 'Gagal memuat produk dari database Supabase.');
     } finally {
       setLoading(false);
     }
@@ -76,7 +66,6 @@ export const Products: React.FC<ProductsPageProps> = ({
     loadData();
   }, [selectedCategory, selectedBrand, sortBy, searchQuery]);
 
-  // Sync props if changed
   useEffect(() => {
     if (initialCategoryId) setSelectedCategory(initialCategoryId);
     if (initialBrand) setSelectedBrand(initialBrand);
@@ -91,6 +80,10 @@ export const Products: React.FC<ProductsPageProps> = ({
     setCurrentPage(1);
   };
 
+  // Extract unique brands dynamically from products in database
+  const brandSource = allProductsMaster.length > 0 ? allProductsMaster : products;
+  const availableBrands = ['all', ...Array.from(new Set(brandSource.map(p => p.brand).filter(Boolean)))];
+
   // Pagination calculation
   const totalPages = Math.ceil(products.length / itemsPerPage);
   const displayedProducts = viewMode === 'all'
@@ -100,34 +93,58 @@ export const Products: React.FC<ProductsPageProps> = ({
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
       
+      {/* Supabase Connection Alert if not yet live */}
+      {!isLive && (
+        <div className="p-4 rounded-2xl bg-amber-950/40 border border-amber-800/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs sm:text-sm text-amber-200">
+          <div className="flex items-center gap-2.5">
+            <Database className="w-5 h-5 text-amber-400 shrink-0" />
+            <div>
+              <p className="font-bold text-white">Database Supabase Belum Terhubung</p>
+              <p className="text-amber-300 text-xs mt-0.5">
+                Masukkan Project URL & Anon Key Supabase Anda agar seluruh 10 produk dari tabel <code>products</code> langsung dimuat.
+              </p>
+            </div>
+          </div>
+          {onOpenSupabaseGuide && (
+            <button
+              onClick={onOpenSupabaseGuide}
+              className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-black font-bold text-xs uppercase tracking-wider shrink-0 transition-colors"
+            >
+              Hubungkan Database
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Header & Title */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-zinc-800 pb-6">
         <div>
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-red-500 mb-1.5">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-red-500 mb-1.5 flex-wrap">
             <span>Katalog Resmi</span>
             <span>·</span>
             <span>Toko Sepatu Olahraga Rizal</span>
-            {isLive && (
+            {isLive ? (
               <>
                 <span>·</span>
-                <span className="text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800/60 text-[10px]">
-                  Live Supabase
+                <span className="text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800/60 text-[10px] inline-flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3" />
+                  <span>Data Supabase Terhubung</span>
                 </span>
               </>
-            )}
+            ) : null}
           </div>
           <h1 className="font-display font-black text-3xl sm:text-4xl text-white tracking-tight uppercase">
-            Semua Koleksi Sepatu ({products.length} Produk)
+            Koleksi Produk Sepatu ({products.length})
           </h1>
           <p className="text-zinc-400 text-xs sm:text-sm mt-1">
-            Menampilkan seluruh koleksi sepatu dari database Supabase dengan spesifikasi, stok, dan harga Rupiah resmi.
+            Data produk, merek, SKU, ukuran, warna, harga, dan gambar diambil langsung dari tabel <code>products</code> Supabase.
           </p>
         </div>
 
         {/* View Toggle & Sort */}
         <div className="flex flex-wrap items-center gap-3">
           
-          {/* View mode toggle: Tampilkan Semua vs Pagination */}
+          {/* View mode toggle */}
           <div className="flex items-center bg-zinc-900 border border-zinc-800 rounded-xl p-1 text-xs">
             <button
               onClick={() => setViewMode('all')}
@@ -137,7 +154,7 @@ export const Products: React.FC<ProductsPageProps> = ({
                   : 'text-zinc-400 hover:text-white'
               }`}
             >
-              Semua ({products.length})
+              Tampilkan Semua ({products.length})
             </button>
             <button
               onClick={() => setViewMode('paginated')}
@@ -154,7 +171,7 @@ export const Products: React.FC<ProductsPageProps> = ({
           {/* Sort selector */}
           <div className="flex items-center gap-2">
             <label htmlFor="sortBy" className="text-xs text-zinc-400 font-semibold uppercase tracking-wider shrink-0">
-              Urutkan:
+              Urutkan Harga:
             </label>
             <select
               id="sortBy"
@@ -162,9 +179,9 @@ export const Products: React.FC<ProductsPageProps> = ({
               onChange={(e) => setSortBy(e.target.value as any)}
               className="bg-zinc-900 border border-zinc-800 text-xs text-white rounded-xl px-3 py-2 focus:outline-none focus:border-red-500"
             >
-              <option value="featured">Unggulan & Terpopuler</option>
-              <option value="price-asc">Harga: Rendah ke Tinggi</option>
-              <option value="price-desc">Harga: Tinggi ke Rendah</option>
+              <option value="featured">Unggulan / Terkini</option>
+              <option value="price-asc">Harga: Termurah ke Termahal</option>
+              <option value="price-desc">Harga: Termahal ke Termurah</option>
             </select>
           </div>
 
@@ -189,7 +206,7 @@ export const Products: React.FC<ProductsPageProps> = ({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Cari nama sepatu, seri, atau merek (contoh: Alphafly, Jordan, Boost, Mercurial, GT Cut, Nitro)..."
+            placeholder="Cari berdasarkan product_name, merek, atau SKU..."
             className="w-full bg-[#121316] text-white placeholder-zinc-500 pl-12 pr-4 py-3.5 rounded-2xl border border-zinc-800 focus:outline-none focus:border-red-500 text-sm shadow-inner transition-colors"
           />
           {searchQuery && (
@@ -218,7 +235,7 @@ export const Products: React.FC<ProductsPageProps> = ({
                   : 'bg-zinc-900 text-zinc-300 hover:bg-zinc-800 hover:text-white border border-zinc-800'
               }`}
             >
-              Semua Produk ({products.length})
+              Semua Produk
             </button>
             {categories.map((cat) => (
               <button
@@ -240,7 +257,7 @@ export const Products: React.FC<ProductsPageProps> = ({
             <span className="text-xs text-zinc-400 font-semibold uppercase tracking-wider mr-2 shrink-0 hidden sm:inline">
               Merek:
             </span>
-            {brands.map((b) => (
+            {availableBrands.map((b) => (
               <button
                 key={b}
                 onClick={() => setSelectedBrand(b)}
@@ -273,10 +290,10 @@ export const Products: React.FC<ProductsPageProps> = ({
         </div>
       )}
 
-      {/* Loading state: show 10 placeholders to prevent layout jump */}
+      {/* Loading state */}
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
+          {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
             <div key={i} className="bg-zinc-900 rounded-2xl h-84 animate-pulse border border-zinc-800" />
           ))}
         </div>
@@ -291,7 +308,7 @@ export const Products: React.FC<ProductsPageProps> = ({
               Tidak Ada Produk yang Ditemukan
             </h3>
             <p className="text-zinc-400 text-xs sm:text-sm">
-              Kami tidak menemukan sepatu olahraga dengan kriteria pencarian "{searchQuery}" atau filter merek/kategori yang dipilih.
+              Tidak ada produk yang cocok dengan pencarian "{searchQuery}" atau filter kategori yang dipilih.
             </p>
           </div>
           <button
@@ -299,20 +316,20 @@ export const Products: React.FC<ProductsPageProps> = ({
             className="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold uppercase tracking-wider transition-colors inline-flex items-center gap-2"
           >
             <RefreshCcw className="w-3.5 h-3.5" />
-            <span>Reset Semua Filter</span>
+            <span>Reset Filter</span>
           </button>
         </div>
       ) : (
-        /* Products Grid displaying all 10 products */
+        /* Products Grid */
         <div className="space-y-8">
           <div className="flex items-center justify-between text-xs text-zinc-400 px-1">
             <span>
               Menampilkan <strong className="text-white">{displayedProducts.length}</strong> dari{' '}
-              <strong className="text-white">{products.length}</strong> sepatu olahraga
+              <strong className="text-white">{products.length}</strong> produk di database
             </span>
             {viewMode === 'all' && (
               <span className="text-emerald-400 font-semibold">
-                ✓ Seluruh {products.length} produk ditampilkan
+                ✓ Seluruh produk ditampilkan
               </span>
             )}
           </div>
@@ -327,7 +344,7 @@ export const Products: React.FC<ProductsPageProps> = ({
             ))}
           </div>
 
-          {/* Pagination Controls (when paginated mode is active) */}
+          {/* Pagination Controls */}
           {viewMode === 'paginated' && totalPages > 1 && (
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-6 border-t border-zinc-800">
               <button

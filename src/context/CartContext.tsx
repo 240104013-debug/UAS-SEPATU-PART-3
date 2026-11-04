@@ -3,13 +3,13 @@ import { Product, CartItem } from '../types/database';
 
 interface CartContextType {
   cart: CartItem[];
-  addToCart: (product: Product, size: number, color: string, quantity?: number) => void;
+  addToCart: (product: Product, size: string | number, color: string, quantity?: number) => void;
   removeFromCart: (itemId: string) => void;
   updateQuantity: (itemId: string, newQuantity: number) => void;
   clearCart: () => void;
   totalItems: number;
   totalPrice: number;
-  lastAddedProduct: { product: Product; size: number; color: string } | null;
+  lastAddedProduct: { product: Product; size: string | number; color: string } | null;
   dismissNotification: () => void;
 }
 
@@ -27,7 +27,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   });
 
-  const [lastAddedProduct, setLastAddedProduct] = useState<{ product: Product; size: number; color: string } | null>(null);
+  const [lastAddedProduct, setLastAddedProduct] = useState<{ product: Product; size: string | number; color: string } | null>(null);
 
   useEffect(() => {
     try {
@@ -37,7 +37,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [cart]);
 
-  const addToCart = (product: Product, size: number, color: string, quantity: number = 1) => {
+  const addToCart = (product: Product, size: string | number, color: string, quantity: number = 1) => {
     const itemId = `${product.id}-${size}-${color.replace(/\s+/g, '_')}`;
 
     setCart(prevCart => {

@@ -1,7 +1,7 @@
 export interface Category {
   id: string;
   name: string;
-  slug: string;
+  slug?: string;
   description?: string;
   image_url?: string;
   created_at?: string;
@@ -10,13 +10,19 @@ export interface Category {
 export interface Product {
   id: string;
   category_id: string;
-  name: string;
-  brand: 'Nike' | 'Adidas' | 'Puma' | 'Jordan' | 'Under Armour' | string;
+  product_name: string;
+  name: string; // fallback alias for UI
+  brand: string;
+  sku: string;
+  size?: string | number | number[];
+  color?: string | string[];
+  sizes: (number | string)[];
+  colors: string[];
+  size_display: string;
+  color_display: string;
   description: string;
   price: number;
   stock: number;
-  sizes: number[];
-  colors: string[];
   image_url: string;
   is_featured?: boolean;
   created_at?: string;
@@ -52,7 +58,7 @@ export interface OrderItem {
   product_name: string;
   price: number;
   quantity: number;
-  size: number;
+  size: string | number;
   color: string;
   subtotal: number;
   created_at?: string;
@@ -69,7 +75,7 @@ export interface FAQ {
 export interface CartItem {
   id: string; // unique item id: productId-size-color
   product: Product;
-  size: number;
+  size: string | number;
   color: string;
   quantity: number;
 }

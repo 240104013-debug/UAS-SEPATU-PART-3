@@ -93,18 +93,41 @@ export const Cart: React.FC<CartProps> = ({
                 className="flex items-center gap-4 cursor-pointer flex-1"
                 onClick={() => onViewProduct(item.product)}
               >
-                <img
-                  src={item.product.image_url}
-                  alt={item.product.name}
-                  className="w-20 h-20 rounded-xl object-cover bg-zinc-900 border border-zinc-800 shrink-0"
-                  referrerPolicy="no-referrer"
-                />
-                <div className="space-y-1">
-                  <span className="text-[11px] font-bold text-red-500 uppercase tracking-widest block">
-                    {item.product.brand}
-                  </span>
-                  <h3 className="font-display font-bold text-sm sm:text-base text-white hover:text-red-400 transition-colors">
-                    {item.product.name}
+                <div className="w-20 h-20 rounded-xl bg-zinc-900 border border-zinc-800 p-1 flex items-center justify-center shrink-0 overflow-hidden">
+                  {item.product.image_url ? (
+                    <img
+                      src={item.product.image_url}
+                      alt={item.product.product_name || item.product.name}
+                      className="w-full h-full object-contain"
+                      referrerPolicy="no-referrer"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        const parent = e.currentTarget.parentElement;
+                        if (parent && !parent.querySelector('.err-placeholder')) {
+                          const span = document.createElement('span');
+                          span.className = 'err-placeholder text-[10px] text-zinc-500 text-center leading-tight';
+                          span.innerText = 'Gambar Tidak Tersedia';
+                          parent.appendChild(span);
+                        }
+                      }}
+                    />
+                  ) : (
+                    <span className="text-[10px] text-zinc-500 text-center leading-tight">Gambar Tidak Tersedia</span>
+                  )}
+                </div>
+                <div className="space-y-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-[11px] font-bold text-red-500 uppercase tracking-widest block">
+                      {item.product.brand}
+                    </span>
+                    {item.product.sku && (
+                      <span className="text-[10px] font-mono text-zinc-400">
+                        ({item.product.sku})
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="font-display font-bold text-sm sm:text-base text-white hover:text-red-400 transition-colors truncate">
+                    {item.product.product_name || item.product.name}
                   </h3>
                   <div className="flex items-center gap-3 text-xs text-zinc-400">
                     <span>Size: <strong className="text-white font-mono">{item.size}</strong></span>

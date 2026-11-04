@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowRight, Zap, Shield, Trophy, Activity, Sparkles, ChevronRight } from 'lucide-react';
 import { Product, Category } from '../types/database';
-import { getProducts, getCategories } from '../lib/supabase';
+import { getProducts, getCategories, getFallbackCategoryImage } from '../lib/supabase';
 import { ProductCard } from '../components/ProductCard';
 
 interface HomeProps {
@@ -107,12 +107,18 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, onViewProduct }) => {
 
             {/* Right Hero Image Card */}
             <div className="lg:col-span-6 relative flex justify-center items-center">
-              <div className="relative w-full aspect-[16/10] sm:aspect-[16/9] lg:aspect-[4/3] rounded-3xl overflow-hidden border border-zinc-700/60 shadow-2xl shadow-red-950/20 group">
+              <div className="relative w-full aspect-[16/10] sm:aspect-[16/9] lg:aspect-[4/3] rounded-3xl overflow-hidden border border-zinc-700/60 bg-[#16171b] shadow-2xl shadow-red-950/20 group flex items-center justify-center p-6">
                 <img
-                  src="/src/assets/images/hero_sports_shoes_1793759787842.jpg"
-                  alt="Sepatu Olahraga Rizal Sport"
-                  className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
+                  src={featuredProducts[0]?.image_url || "/src/assets/images/hero_sports_shoes_1793759787842.jpg"}
+                  alt={featuredProducts[0]?.product_name || "Sepatu Olahraga Rizal Sport"}
+                  className="w-full h-full object-contain object-center group-hover:scale-105 transition-transform duration-700 ease-out"
                   referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    const img = e.currentTarget;
+                    if (img.src !== "/src/assets/images/hero_sports_shoes_1793759787842.jpg") {
+                      img.src = "/src/assets/images/hero_sports_shoes_1793759787842.jpg";
+                    }
+                  }}
                 />
                 
                 {/* Visual Glow scrim */}
@@ -120,18 +126,29 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, onViewProduct }) => {
 
                 {/* Badge Overlay */}
                 <div className="absolute bottom-5 left-5 right-5 flex items-center justify-between text-white backdrop-blur-md bg-black/60 p-4 rounded-2xl border border-white/10">
-                  <div>
-                    <span className="text-[11px] font-bold text-red-400 uppercase tracking-widest block">
-                      Unggulan Pekan Ini
+                  <div className="min-w-0 pr-3">
+                    <span className="text-[11px] font-bold text-red-400 uppercase tracking-widest block truncate">
+                      {featuredProducts[0]?.brand ? `${featuredProducts[0].brand} · Pilihan Unggulan` : 'Unggulan Pekan Ini'}
                     </span>
-                    <h3 className="font-display font-bold text-sm sm:text-base text-white">
-                      Adidas Ultra Runner Boost 24 Sport
+                    <h3 className="font-display font-bold text-sm sm:text-base text-white truncate">
+                      {featuredProducts[0]?.product_name || featuredProducts[0]?.name || 'Koleksi Sepatu Olahraga'}
                     </h3>
+                    {featuredProducts[0]?.sku && (
+                      <span className="text-[10px] font-mono text-zinc-400 block">
+                        SKU: {featuredProducts[0].sku}
+                      </span>
+                    )}
                   </div>
                   <button
-                    onClick={() => onNavigate('products')}
-                    className="p-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white shrink-0"
-                    title="Lihat Produk"
+                    onClick={() => {
+                      if (featuredProducts[0]) {
+                        onViewProduct(featuredProducts[0]);
+                      } else {
+                        onNavigate('products');
+                      }
+                    }}
+                    className="p-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white shrink-0 shadow-md"
+                    title="Lihat Detail Produk"
                   >
                     <ArrowRight className="w-4 h-4" />
                   </button>
@@ -222,39 +239,56 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, onViewProduct }) => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {categories.map(category => (
-            <div
-              key={category.id}
-              onClick={() => onNavigate('products', { categoryId: category.id })}
-              className="group relative h-72 rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-900 cursor-pointer hover:border-zinc-700 transition-all shadow-lg"
-            >
-              <img
-                src={category.image_url || '/src/assets/images/hero_sports_shoes_1793759787842.jpg'}
-                alt={category.name}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                referrerPolicy="no-referrer"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
-              
-              <div className="absolute inset-0 p-6 flex flex-col justify-end">
-                <span className="text-[11px] font-bold uppercase tracking-widest text-red-400">
-                  Kategori
-                </span>
-                <h3 className="font-display font-black text-xl text-white uppercase group-hover:text-red-400 transition-colors">
-                  {category.name}
-                </h3>
-                <p className="text-xs text-zinc-300 mt-1 line-clamp-2 leading-relaxed">
-                  {category.description}
-                </p>
-                <div className="mt-3 flex items-center gap-1.5 text-xs font-bold text-white group-hover:translate-x-1 transition-transform">
-                  <span>Lihat Koleksi</span>
-                  <ArrowRight className="w-3.5 h-3.5 text-red-500" />
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[1, 2, 3, 4].map(n => (
+              <div key={n} className="bg-zinc-900 rounded-2xl h-72 animate-pulse border border-zinc-800" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {categories.map(category => {
+              const fallback = getFallbackCategoryImage(category.name || category.slug || category.id);
+              return (
+                <div
+                  key={category.id}
+                  onClick={() => onNavigate('products', { categoryId: category.id })}
+                  className="group relative h-72 rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-900 cursor-pointer hover:border-zinc-700 transition-all shadow-lg"
+                >
+                  <img
+                    src={category.image_url || fallback}
+                    alt={category.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    referrerPolicy="no-referrer"
+                    onError={(e) => {
+                      const img = e.currentTarget;
+                      if (img.src !== fallback) {
+                        img.src = fallback;
+                      }
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+                  
+                  <div className="absolute inset-0 p-6 flex flex-col justify-end">
+                    <span className="text-[11px] font-bold uppercase tracking-widest text-red-400">
+                      Kategori
+                    </span>
+                    <h3 className="font-display font-black text-xl text-white uppercase group-hover:text-red-400 transition-colors">
+                      {category.name}
+                    </h3>
+                    <p className="text-xs text-zinc-300 mt-1 line-clamp-2 leading-relaxed">
+                      {category.description}
+                    </p>
+                    <div className="mt-3 flex items-center gap-1.5 text-xs font-bold text-white group-hover:translate-x-1 transition-transform">
+                      <span>Lihat Koleksi</span>
+                      <ArrowRight className="w-3.5 h-3.5 text-red-500" />
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          ))}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </section>
 
       {/* 5. KEUNGGULAN TOKO (STORE ADVANTAGES) */}

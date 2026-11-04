@@ -106,6 +106,7 @@ function MainApp() {
             initialCategoryId={productFilterParams.categoryId}
             initialBrand={productFilterParams.brand}
             onViewProduct={handleViewProduct}
+            onOpenSupabaseGuide={() => setIsSupabaseModalOpen(true)}
           />
         )}
 

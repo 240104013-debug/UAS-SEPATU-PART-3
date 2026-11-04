@@ -85,18 +85,25 @@ export const Chatbot: React.FC<ChatbotProps> = ({ onSelectProduct, onNavigateToP
     }
 
     // 2. Check for Specific Product or Brand Search
-    const foundByBrand = products.filter(p => q.includes(p.brand.toLowerCase()));
-    const foundByName = products.filter(p => 
-      p.name.toLowerCase().split(' ').some(word => word.length > 3 && q.includes(word))
-    );
+    const foundByBrand = products.filter(p => p.brand && q.includes(p.brand.toLowerCase()));
+    const foundByName = products.filter(p => {
+      const pName = (p.product_name || p.name || '').toLowerCase();
+      const pSku = (p.sku || '').toLowerCase();
+      return pName.includes(q) || (pSku && q.includes(pSku)) || pName.split(' ').some(word => word.length > 3 && q.includes(word));
+    });
 
     // Specific Category Search
-    const matchedCategory = categories.find(cat => 
-      q.includes(cat.name.toLowerCase()) || q.includes(cat.slug.toLowerCase()) ||
-      (q.includes('lari') && cat.slug === 'running') ||
-      (q.includes('bola') && cat.slug === 'football') ||
-      (q.includes('gym') && cat.slug === 'training')
-    );
+    const matchedCategory = categories.find(cat => {
+      const catName = (cat.name || '').toLowerCase();
+      const catSlug = (cat.slug || '').toLowerCase();
+      return (
+        q.includes(catName) ||
+        (catSlug && q.includes(catSlug)) ||
+        (q.includes('lari') && catSlug === 'running') ||
+        (q.includes('bola') && catSlug === 'football') ||
+        (q.includes('gym') && catSlug === 'training')
+      );
+    });
 
     if (matchedCategory) {
       const categoryProducts = products.filter(p => p.category_id === matchedCategory.id);
@@ -286,15 +293,24 @@ export const Chatbot: React.FC<ChatbotProps> = ({ onSelectProduct, onNavigateToP
                           key={prod.id}
                           className="bg-zinc-900 border border-zinc-800 p-2.5 rounded-xl flex items-center gap-3 hover:border-zinc-700 transition-colors"
                         >
-                          <img
-                            src={prod.image_url}
-                            alt={prod.name}
-                            className="w-12 h-12 rounded-lg object-cover bg-zinc-800 shrink-0"
-                            referrerPolicy="no-referrer"
-                          />
+                          <div className="w-12 h-12 rounded-lg bg-zinc-800 p-1 flex items-center justify-center shrink-0 overflow-hidden">
+                            {prod.image_url ? (
+                              <img
+                                src={prod.image_url}
+                                alt={prod.product_name || prod.name}
+                                className="w-full h-full object-contain"
+                                referrerPolicy="no-referrer"
+                              />
+                            ) : (
+                              <span className="text-[8px] text-zinc-500 text-center">No Img</span>
+                            )}
+                          </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-[10px] text-zinc-400 font-bold uppercase">{prod.brand}</p>
-                            <h4 className="text-xs font-bold text-white truncate">{prod.name}</h4>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <p className="text-[10px] text-zinc-400 font-bold uppercase">{prod.brand}</p>
+                              {prod.sku && <span className="text-[9px] font-mono text-zinc-500">· {prod.sku}</span>}
+                            </div>
+                            <h4 className="text-xs font-bold text-white truncate">{prod.product_name || prod.name}</h4>
                             <div className="flex items-center gap-2 mt-0.5">
                               <span className="text-xs font-mono font-bold text-red-400">
                                 {formatRupiah(prod.price)}
