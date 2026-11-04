@@ -1,0 +1,6 @@
+{
+  "name": "Toko Sepatu Olahraga Rizal",
+  "description": "Toko online resmi sepatu olahraga Rizal. Menyediakan sepatu running, basket, sepak bola, dan training berkualitas dari merek ternama dengan gaya modern dan sporty.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

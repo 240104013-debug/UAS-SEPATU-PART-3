@@ -1,0 +1,266 @@
+import { Category, Product, FAQ } from '../types/database';
+
+export const INITIAL_CATEGORIES: Category[] = [
+  {
+    id: 'cat-running',
+    name: 'Running',
+    slug: 'running',
+    description: 'Sepatu lari berteknologi tinggi dengan bantalan responsif untuk lari marathon maupun jogging harian.',
+    image_url: '/src/assets/images/product_running_shoe_1793759789134.jpg'
+  },
+  {
+    id: 'cat-basketball',
+    name: 'Basketball',
+    slug: 'basketball',
+    description: 'Sepatu basket dengan dukungan ankle superior, cengkeraman maksimal di lapangan, dan bantalan benturan.',
+    image_url: '/src/assets/images/product_basketball_shoe_1793759790682.jpg'
+  },
+  {
+    id: 'cat-football',
+    name: 'Sepak Bola & Futsal',
+    slug: 'football',
+    description: 'Sepatu bola dan futsal ringan dengan traksi aerodinamis untuk akselerasi dan kontrol bola presisi.',
+    image_url: '/src/assets/images/product_soccer_cleats_1793759790770.jpg'
+  },
+  {
+    id: 'cat-training',
+    name: 'Training & Gym',
+    slug: 'training',
+    description: 'Sepatu latihan multi-fungsi dengan stabilitas lateral tinggi untuk crossfit, angkat beban, dan kardio.',
+    image_url: '/src/assets/images/product_trainer_sneaker_1793759790756.jpg'
+  }
+];
+
+export const INITIAL_PRODUCTS: Product[] = [
+  {
+    id: 'prod-nike-alphafly',
+    category_id: 'cat-running',
+    name: 'Nike Air Zoom Alphafly Next% 3 Elite',
+    brand: 'Nike',
+    description: 'Sepatu lari kompetisi rekor dunia maraton dengan kombinasi busa ZoomX ultra-ringan, unit Air Zoom ganda di kaki depan, dan pelat serat karbon Flyplate panjang penuh untuk efisiensi energi maksimal.',
+    price: 3899000,
+    stock: 12,
+    sizes: [40, 41, 42, 43, 44, 45],
+    colors: ['Hitam / Crimson Red', 'Putih / Merah Balap', 'All Black Stealth'],
+    image_url: '/src/assets/images/product_running_shoe_1793759789134.jpg',
+    is_featured: true,
+  },
+  {
+    id: 'prod-jordan-retro-high',
+    category_id: 'cat-basketball',
+    name: 'Air Jordan 6 Retro "Bred Inferno"',
+    brand: 'Jordan',
+    description: 'Ikon lapangan basket legendaris dengan material kulit premium bertekstur, perforated side panels untuk sirkulasi udara, unit Air-Sole transparan di bagian tumit, dan sol icy translucent yang mencengkeram lantai hardwood.',
+    price: 3299000,
+    stock: 8,
+    sizes: [40, 41, 42, 43, 44],
+    colors: ['Hitam / Merah Banteng', 'Black Infrared', 'Triple White'],
+    image_url: '/src/assets/images/product_basketball_shoe_1793759790682.jpg',
+    is_featured: true,
+  },
+  {
+    id: 'prod-nike-mercurial',
+    category_id: 'cat-football',
+    name: 'Nike Zoom Mercurial Superfly 9 Elite FG',
+    brand: 'Nike',
+    description: 'Sepatu bola level profesional dengan unit 3/4 Zoom Air khusus lapangan rumput alami. Material Vaporposite+ di bagian atas menggabungkan jaring berpola cengkeram untuk sentuhan bola tak tertandingi di kecepatan tinggi.',
+    price: 3699000,
+    stock: 15,
+    sizes: [39, 40, 41, 42, 43, 44],
+    colors: ['Hitam / Fiery Crimson / Perak Krom', 'Merah Laser / Hitam'],
+    image_url: '/src/assets/images/product_soccer_cleats_1793759790770.jpg',
+    is_featured: true,
+  },
+  {
+    id: 'prod-adidas-ultrarunner',
+    category_id: 'cat-running',
+    name: 'Adidas Ultra Runner Boost 24 Sport',
+    brand: 'Adidas',
+    description: 'Kenyamanan tanpa tanding dengan sol midsole Light Boost yang 30% lebih ringan namun menghasilkan energy return luar biasa. Primeknit+ textile upper membalut kaki layaknya kaus kaki atletik.',
+    price: 2899000,
+    stock: 20,
+    sizes: [39, 40, 41, 42, 43, 44, 45],
+    colors: ['Hitam Karbon / Merah Aktif', 'Core Black / Cloud White'],
+    image_url: '/src/assets/images/hero_sports_shoes_1793759787842.jpg',
+    is_featured: true,
+  },
+  {
+    id: 'prod-puma-train-max',
+    category_id: 'cat-training',
+    name: 'Puma FUSE 2.0 Apex Trainer',
+    brand: 'Puma',
+    description: 'Didesain bersama atlet angkat beban dan crossfit dunia. Sol karet PUMAGRIP berdaya tahan ekstrem, heel clip vertikal untuk stabilitas handstand push-up, dan toe box lebar untuk distribusi tenaga optimal.',
+    price: 1999000,
+    stock: 18,
+    sizes: [40, 41, 42, 43, 44],
+    colors: ['Anthracite / Flame Red', 'Black Smoke / Pure White'],
+    image_url: '/src/assets/images/product_trainer_sneaker_1793759790756.jpg',
+    is_featured: false,
+  },
+  {
+    id: 'prod-adidas-predator-pro',
+    category_id: 'cat-football',
+    name: 'Adidas Predator Accuracy+ FG Elite',
+    brand: 'Adidas',
+    description: 'Dirancang untuk akurasi tembakan mematikan. Dilengkapi teknologi High Definition Grip karet timbul pada zona strike serta konstruksi laceless HybridTouch yang halus dan presisi.',
+    price: 3599000,
+    stock: 9,
+    sizes: [40, 41, 42, 43, 44],
+    colors: ['Core Black / Solar Red / White', 'Team Red / Metallic Black'],
+    image_url: '/src/assets/images/product_soccer_cleats_1793759790770.jpg',
+    is_featured: false,
+  }
+];
+
+export const INITIAL_FAQS: FAQ[] = [
+  {
+    id: 'faq-1',
+    question: 'Apakah produk di Toko Sepatu Olahraga Rizal 100% Original?',
+    answer: 'Ya, seluruh produk sepatu di Toko Sepatu Olahraga Rizal dijamin 100% Original bergaransi resmi. Kami bekerjasama langsung dengan distributor resmi Nike, Adidas, Puma, dan Jordan di Indonesia.',
+    category: 'Produk'
+  },
+  {
+    id: 'faq-2',
+    question: 'Berapa lama estimasi pengiriman dan ke mana saja?',
+    answer: 'Kami melayani pengiriman ke seluruh wilayah Indonesia (JNE, SiCepat, J&T, Gosend/Grab Instant untuk Jabodetabek). Estimasi pulau Jawa 1-3 hari kerja, luar pulau Jawa 3-6 hari kerja.',
+    category: 'Pengiriman'
+  },
+  {
+    id: 'faq-3',
+    question: 'Bisa tukar ukuran (size) jika kekecilan atau kebesaran?',
+    answer: 'Bisa! Kami menyediakan fasilitas tukar ukuran dalam waktu 7 hari setelah barang diterima, asalkan sepatu belum digunakan di luar ruangan dan kelengkapan box serta tag masih utuh.',
+    category: 'Garansi'
+  },
+  {
+    id: 'faq-4',
+    question: 'Metode pembayaran apa saja yang didukung?',
+    answer: 'Kami mendukung Transfer Bank (BCA, Mandiri, BRI, BNI), QRIS (GoPay, OVO, Dana, ShopeePay), Kartu Kredit/Debit, dan Cash on Delivery (COD) untuk wilayah tertentu.',
+    category: 'Pembayaran'
+  },
+  {
+    id: 'faq-5',
+    question: 'Di mana lokasi Toko Sepatu Olahraga Rizal?',
+    answer: 'Store kami beralamat di Jl. Pemuda Olahraga No. 88, Jakarta Selatan. Buka setiap hari dari pukul 09.00 - 21.00 WIB.',
+    category: 'Toko'
+  }
+];
+
+export const SUPABASE_SQL_SETUP = `-- SKEMA SQL LENGKAP UNTUK TOKO SEPATU OLAHRAGA RIZAL
+-- Salin dan jalankan seluruh script ini di Supabase Dashboard -> SQL Editor
+
+-- 1. Buat Tabel Categories
+CREATE TABLE IF NOT EXISTS public.categories (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    slug TEXT UNIQUE NOT NULL,
+    description TEXT,
+    image_url TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 2. Buat Tabel Products
+CREATE TABLE IF NOT EXISTS public.products (
+    id TEXT PRIMARY KEY,
+    category_id TEXT REFERENCES public.categories(id) ON DELETE SET NULL,
+    name TEXT NOT NULL,
+    brand TEXT NOT NULL,
+    description TEXT,
+    price BIGINT NOT NULL,
+    stock INT NOT NULL DEFAULT 0,
+    sizes INT[] NOT NULL,
+    colors TEXT[] NOT NULL,
+    image_url TEXT NOT NULL,
+    is_featured BOOLEAN DEFAULT false,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 3. Buat Tabel Customers
+CREATE TABLE IF NOT EXISTS public.customers (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL,
+    email TEXT NOT NULL,
+    phone TEXT NOT NULL,
+    address TEXT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 4. Buat Tabel Orders
+CREATE TABLE IF NOT EXISTS public.orders (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    customer_id UUID REFERENCES public.customers(id) ON DELETE SET NULL,
+    customer_name TEXT NOT NULL,
+    customer_email TEXT NOT NULL,
+    customer_phone TEXT NOT NULL,
+    shipping_address TEXT NOT NULL,
+    payment_method TEXT NOT NULL,
+    total_amount BIGINT NOT NULL,
+    status TEXT DEFAULT 'pending',
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 5. Buat Tabel Order Items
+CREATE TABLE IF NOT EXISTS public.order_items (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    order_id UUID REFERENCES public.orders(id) ON DELETE CASCADE,
+    product_id TEXT REFERENCES public.products(id) ON DELETE RESTRICT,
+    product_name TEXT NOT NULL,
+    price BIGINT NOT NULL,
+    quantity INT NOT NULL,
+    size INT NOT NULL,
+    color TEXT NOT NULL,
+    subtotal BIGINT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 6. Buat Tabel FAQs
+CREATE TABLE IF NOT EXISTS public.faqs (
+    id TEXT PRIMARY KEY,
+    question TEXT NOT NULL,
+    answer TEXT NOT NULL,
+    category TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- AKTIFKAN ROW LEVEL SECURITY (RLS)
+ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.customers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.order_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.faqs ENABLE ROW LEVEL SECURITY;
+
+-- KEBIJAKAN RLS (Public read untuk katalog & faqs, public create untuk orders/customers)
+CREATE POLICY "Public read categories" ON public.categories FOR SELECT USING (true);
+CREATE POLICY "Public read products" ON public.products FOR SELECT USING (true);
+CREATE POLICY "Public read faqs" ON public.faqs FOR SELECT USING (true);
+CREATE POLICY "Public insert customers" ON public.customers FOR INSERT WITH CHECK (true);
+CREATE POLICY "Public insert orders" ON public.orders FOR INSERT WITH CHECK (true);
+CREATE POLICY "Public insert order_items" ON public.order_items FOR INSERT WITH CHECK (true);
+
+-- SEED DATA AWAL (KATEGORI)
+INSERT INTO public.categories (id, name, slug, description, image_url)
+VALUES
+('cat-running', 'Running', 'running', 'Sepatu lari berteknologi tinggi dengan bantalan responsif.', '/src/assets/images/product_running_shoe_1793759789134.jpg'),
+('cat-basketball', 'Basketball', 'basketball', 'Sepatu basket dengan dukungan ankle superior.', '/src/assets/images/product_basketball_shoe_1793759790682.jpg'),
+('cat-football', 'Sepak Bola & Futsal', 'football', 'Sepatu bola dan futsal ringan dengan traksi aerodinamis.', '/src/assets/images/product_soccer_cleats_1793759790770.jpg'),
+('cat-training', 'Training & Gym', 'training', 'Sepatu latihan multi-fungsi dengan stabilitas lateral.', '/src/assets/images/product_trainer_sneaker_1793759790756.jpg')
+ON CONFLICT (id) DO NOTHING;
+
+-- SEED DATA AWAL (PRODUK)
+INSERT INTO public.products (id, category_id, name, brand, description, price, stock, sizes, colors, image_url, is_featured)
+VALUES
+('prod-nike-alphafly', 'cat-running', 'Nike Air Zoom Alphafly Next% 3 Elite', 'Nike', 'Sepatu lari kompetisi rekor dunia maraton dengan kombinasi busa ZoomX ultra-ringan.', 3899000, 12, '{40,41,42,43,44,45}', '{"Hitam / Crimson Red","Putih / Merah Balap","All Black Stealth"}', '/src/assets/images/product_running_shoe_1793759789134.jpg', true),
+('prod-jordan-retro-high', 'cat-basketball', 'Air Jordan 6 Retro "Bred Inferno"', 'Jordan', 'Ikon lapangan basket legendaris dengan material kulit premium bertekstur.', 3299000, 8, '{40,41,42,43,44}', '{"Hitam / Merah Banteng","Black Infrared","Triple White"}', '/src/assets/images/product_basketball_shoe_1793759790682.jpg', true),
+('prod-nike-mercurial', 'cat-football', 'Nike Zoom Mercurial Superfly 9 Elite FG', 'Nike', 'Sepatu bola level profesional dengan unit 3/4 Zoom Air khusus lapangan rumput.', 3699000, 15, '{39,40,41,42,43,44}', '{"Hitam / Fiery Crimson / Perak Krom","Merah Laser / Hitam"}', '/src/assets/images/product_soccer_cleats_1793759790770.jpg', true),
+('prod-adidas-ultrarunner', 'cat-running', 'Adidas Ultra Runner Boost 24 Sport', 'Adidas', 'Kenyamanan tanpa tanding dengan sol midsole Light Boost yang 30% lebih ringan.', 2899000, 20, '{39,40,41,42,43,44,45}', '{"Hitam Karbon / Merah Aktif","Core Black / Cloud White"}', '/src/assets/images/hero_sports_shoes_1793759787842.jpg', true),
+('prod-puma-train-max', 'cat-training', 'Puma FUSE 2.0 Apex Trainer', 'Puma', 'Didesain bersama atlet angkat beban dunia. Sol karet PUMAGRIP berdaya tahan ekstrem.', 1999000, 18, '{40,41,42,43,44}', '{"Anthracite / Flame Red","Black Smoke / Pure White"}', '/src/assets/images/product_trainer_sneaker_1793759790756.jpg', false)
+ON CONFLICT (id) DO NOTHING;
+
+-- SEED DATA AWAL (FAQS)
+INSERT INTO public.faqs (id, question, answer, category)
+VALUES
+('faq-1', 'Apakah produk di Toko Sepatu Olahraga Rizal 100% Original?', 'Ya, seluruh produk di Toko Sepatu Olahraga Rizal dijamin 100% Original bergaransi resmi dari distributor resmi Nike, Adidas, Puma, dan Jordan.', 'Produk'),
+('faq-2', 'Berapa lama estimasi pengiriman dan ke mana saja?', 'Kami melayani pengiriman ke seluruh wilayah Indonesia (JNE, SiCepat, J&T). Estimasi Jawa 1-3 hari, luar Jawa 3-6 hari.', 'Pengiriman'),
+('faq-3', 'Bisa tukar ukuran (size) jika kekecilan atau kebesaran?', 'Bisa! Kami menyediakan fasilitas tukar ukuran dalam waktu 7 hari setelah barang diterima dengan kondisi baru dan box lengkap.', 'Garansi')
+ON CONFLICT (id) DO NOTHING;
+`;
