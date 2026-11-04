@@ -2,19 +2,72 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Product, Category, FAQ, Order, OrderItem, Customer } from '../types/database';
 import { INITIAL_CATEGORIES, INITIAL_PRODUCTS, INITIAL_FAQS } from './seedData';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// Retrieve credentials from environment or localStorage
+export function getActiveSupabaseCredentials(): { url: string; key: string; isLive: boolean } {
+  const envUrl = import.meta.env.VITE_SUPABASE_URL || '';
+  const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+  
+  let localUrl = '';
+  let localKey = '';
+  if (typeof window !== 'undefined') {
+    localUrl = localStorage.getItem('tokorizal_supabase_url') || '';
+    localKey = localStorage.getItem('tokorizal_supabase_key') || '';
+  }
 
-export const isSupabaseConfigured = Boolean(
-  supabaseUrl && 
-  supabaseAnonKey && 
-  supabaseUrl !== 'https://your-project.supabase.co' &&
-  !supabaseUrl.includes('placeholder')
-);
+  const url = (localUrl && localUrl.trim()) || envUrl.trim();
+  const key = (localKey && localKey.trim()) || envKey.trim();
 
-export const supabase: SupabaseClient | null = isSupabaseConfigured
-  ? createClient(supabaseUrl, supabaseAnonKey)
-  : null;
+  const isLive = Boolean(
+    url &&
+    key &&
+    url.startsWith('https://') &&
+    !url.includes('your-project.supabase.co') &&
+    !url.includes('placeholder')
+  );
+
+  return { url, key, isLive };
+}
+
+let cachedClient: SupabaseClient | null = null;
+let cachedClientUrl = '';
+let cachedClientKey = '';
+
+export function getSupabaseClient(): SupabaseClient | null {
+  const { url, key, isLive } = getActiveSupabaseCredentials();
+  if (!isLive) return null;
+
+  if (cachedClient && cachedClientUrl === url && cachedClientKey === key) {
+    return cachedClient;
+  }
+
+  cachedClient = createClient(url, key, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+    }
+  });
+  cachedClientUrl = url;
+  cachedClientKey = key;
+  return cachedClient;
+}
+
+export const isSupabaseConfigured = getActiveSupabaseCredentials().isLive;
+
+export function setSupabaseCredentials(url: string, key: string) {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('tokorizal_supabase_url', url.trim());
+    localStorage.setItem('tokorizal_supabase_key', key.trim());
+    cachedClient = null;
+  }
+}
+
+export function clearSupabaseCredentials() {
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('tokorizal_supabase_url');
+    localStorage.removeItem('tokorizal_supabase_key');
+    cachedClient = null;
+  }
+}
 
 // Format Rupiah helper
 export function formatRupiah(amount: number): string {
@@ -26,37 +79,41 @@ export function formatRupiah(amount: number): string {
   }).format(amount);
 }
 
-// Fetch all categories
+// Fetch all categories without arbitrary limits
 export async function getCategories(): Promise<Category[]> {
-  if (!isSupabaseConfigured || !supabase) {
+  const client = getSupabaseClient();
+  if (!client) {
     return INITIAL_CATEGORIES;
   }
 
   try {
-    const { data, error } = await supabase
+    const { data, error } = await client
       .from('categories')
       .select('*')
       .order('name');
 
     if (error || !data || data.length === 0) {
-      console.warn('Supabase categories fetch error or empty, using default catalog:', error?.message);
+      console.warn('Supabase categories query warning:', error?.message);
       return INITIAL_CATEGORIES;
     }
 
     return data as Category[];
   } catch (err) {
-    console.warn('Network error fetching categories from Supabase, fallback active:', err);
+    console.warn('Network error fetching categories from Supabase:', err);
     return INITIAL_CATEGORIES;
   }
 }
 
-// Fetch all products
+// Fetch all products directly from Supabase (NO LIMIT 6, NO SLICE 6, ALL 10 PRODUCTS)
 export async function getProducts(options?: {
   categoryId?: string;
   brand?: string;
   searchQuery?: string;
 }): Promise<Product[]> {
-  if (!isSupabaseConfigured || !supabase) {
+  const client = getSupabaseClient();
+
+  // If Supabase is not connected, use the full 10-product initial dataset
+  if (!client) {
     let results = [...INITIAL_PRODUCTS];
     if (options?.categoryId && options.categoryId !== 'all') {
       results = results.filter(p => p.category_id === options.categoryId);
@@ -76,61 +133,102 @@ export async function getProducts(options?: {
   }
 
   try {
-    let query = supabase.from('products').select('*, categories(*)');
+    // 1. Primary Query with categories relation as requested:
+    // "Gunakan query Supabase yang mengambil seluruh data dari tabel products dan relasi categories."
+    let query = client
+      .from('products')
+      .select('*, categories(*)');
 
+    // Filter by Category ONLY if a specific category is chosen (NOT 'all')
     if (options?.categoryId && options.categoryId !== 'all') {
       query = query.eq('category_id', options.categoryId);
     }
 
+    // Filter by Brand ONLY if a specific brand is chosen (NOT 'all')
     if (options?.brand && options.brand !== 'all') {
       query = query.ilike('brand', options.brand);
     }
 
+    // Search query
     if (options?.searchQuery && options.searchQuery.trim() !== '') {
       const q = options.searchQuery.trim();
       query = query.or(`name.ilike.%${q}%,brand.ilike.%${q}%,description.ilike.%${q}%`);
     }
 
-    const { data, error } = await query.order('created_at', { ascending: false });
+    // Execute query WITHOUT ANY LIMIT (NO limit(6), NO slice(0, 6))
+    const { data, error } = await query;
 
-    if (error || !data || data.length === 0) {
-      console.warn('Supabase products returned no records or error, using default catalog:', error?.message);
-      // Fallback filter
-      let fallback = [...INITIAL_PRODUCTS];
-      if (options?.categoryId && options.categoryId !== 'all') {
-        fallback = fallback.filter(p => p.category_id === options.categoryId);
-      }
-      if (options?.brand && options.brand !== 'all') {
-        fallback = fallback.filter(p => p.brand.toLowerCase() === options.brand?.toLowerCase());
-      }
-      if (options?.searchQuery) {
-        const q = options.searchQuery.toLowerCase();
-        fallback = fallback.filter(p => p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q));
-      }
-      return fallback;
+    if (!error && data && data.length > 0) {
+      // Map correctly to ensure all fields (price, stock, sizes, colors, image_url) are intact
+      return data as Product[];
     }
 
-    return data as Product[];
+    // If join with categories(*) threw an error (e.g. FK relation cache in PostgREST),
+    // try fallback query directly on products table so products are never lost!
+    if (error) {
+      console.warn('Query with categories(*) join failed, attempting direct products select:', error.message);
+      let directQuery = client.from('products').select('*');
+
+      if (options?.categoryId && options.categoryId !== 'all') {
+        directQuery = directQuery.eq('category_id', options.categoryId);
+      }
+      if (options?.brand && options.brand !== 'all') {
+        directQuery = directQuery.ilike('brand', options.brand);
+      }
+      if (options?.searchQuery && options.searchQuery.trim() !== '') {
+        const q = options.searchQuery.trim();
+        directQuery = directQuery.or(`name.ilike.%${q}%,brand.ilike.%${q}%,description.ilike.%${q}%`);
+      }
+
+      const { data: directData, error: directError } = await directQuery;
+      if (!directError && directData && directData.length > 0) {
+        return directData as Product[];
+      }
+    }
+
+    // If Supabase returned zero records (table empty), return all 10 verified products
+    console.warn('Supabase returned 0 records, falling back to full 10 products catalog');
+    let fallback = [...INITIAL_PRODUCTS];
+    if (options?.categoryId && options.categoryId !== 'all') {
+      fallback = fallback.filter(p => p.category_id === options.categoryId);
+    }
+    if (options?.brand && options.brand !== 'all') {
+      fallback = fallback.filter(p => p.brand.toLowerCase() === options.brand?.toLowerCase());
+    }
+    if (options?.searchQuery) {
+      const q = options.searchQuery.toLowerCase();
+      fallback = fallback.filter(p => p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q));
+    }
+    return fallback;
   } catch (err) {
-    console.warn('Error fetching products from Supabase:', err);
+    console.warn('Error executing Supabase products query:', err);
     return INITIAL_PRODUCTS;
   }
 }
 
 // Fetch single product by ID
 export async function getProductById(id: string): Promise<Product | null> {
-  if (!isSupabaseConfigured || !supabase) {
+  const client = getSupabaseClient();
+  if (!client) {
     return INITIAL_PRODUCTS.find(p => p.id === id) || null;
   }
 
   try {
-    const { data, error } = await supabase
+    const { data, error } = await client
       .from('products')
       .select('*, categories(*)')
       .eq('id', id)
       .single();
 
     if (error || !data) {
+      // Fallback direct
+      const { data: directData } = await client
+        .from('products')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (directData) return directData as Product;
       return INITIAL_PRODUCTS.find(p => p.id === id) || null;
     }
 
@@ -142,12 +240,13 @@ export async function getProductById(id: string): Promise<Product | null> {
 
 // Fetch FAQs
 export async function getFAQs(): Promise<FAQ[]> {
-  if (!isSupabaseConfigured || !supabase) {
+  const client = getSupabaseClient();
+  if (!client) {
     return INITIAL_FAQS;
   }
 
   try {
-    const { data, error } = await supabase.from('faqs').select('*');
+    const { data, error } = await client.from('faqs').select('*');
     if (error || !data || data.length === 0) {
       return INITIAL_FAQS;
     }
@@ -163,15 +262,15 @@ export async function createCheckoutOrder(
   orderData: Omit<Order, 'id' | 'customer_id' | 'created_at'>,
   items: Omit<OrderItem, 'id' | 'order_id' | 'created_at'>[]
 ): Promise<{ success: boolean; orderId?: string; error?: string }> {
-  if (!isSupabaseConfigured || !supabase) {
-    // Simulated offline/demo mode order
+  const client = getSupabaseClient();
+  if (!client) {
     const mockId = 'ORD-' + Math.floor(100000 + Math.random() * 900000);
     return { success: true, orderId: mockId };
   }
 
   try {
-    // 1. Create or query customer
-    const { data: customerRecord, error: customerErr } = await supabase
+    // 1. Insert customer
+    const { data: customerRecord, error: customerErr } = await client
       .from('customers')
       .insert({
         name: customerData.name,
@@ -183,12 +282,11 @@ export async function createCheckoutOrder(
       .single();
 
     if (customerErr) {
-      console.error('Customer insert error:', customerErr);
-      // Even if customer insert fails or table is locked, continue with order
+      console.warn('Customer insert error (continuing with order):', customerErr.message);
     }
 
     // 2. Insert Order
-    const { data: newOrder, error: orderErr } = await supabase
+    const { data: newOrder, error: orderErr } = await client
       .from('orders')
       .insert({
         customer_id: customerRecord?.id || null,
@@ -219,12 +317,12 @@ export async function createCheckoutOrder(
       subtotal: item.subtotal
     }));
 
-    const { error: itemsErr } = await supabase
+    const { error: itemsErr } = await client
       .from('order_items')
       .insert(orderItemsToInsert);
 
     if (itemsErr) {
-      console.error('Order items error:', itemsErr);
+      console.warn('Order items insert error:', itemsErr.message);
     }
 
     return { success: true, orderId: newOrder.id };

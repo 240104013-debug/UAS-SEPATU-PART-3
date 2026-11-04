@@ -12,6 +12,7 @@ interface HomeProps {
 export const Home: React.FC<HomeProps> = ({ onNavigate, onViewProduct }) => {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [totalProductsCount, setTotalProductsCount] = useState<number>(10);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -22,9 +23,9 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, onViewProduct }) => {
           getProducts(),
           getCategories()
         ]);
-        // Get featured items
+        setTotalProductsCount(allProds.length);
         const featured = allProds.filter(p => p.is_featured);
-        setFeaturedProducts(featured.length > 0 ? featured.slice(0, 4) : allProds.slice(0, 4));
+        setFeaturedProducts(featured.length > 0 ? featured : allProds);
         setCategories(allCats);
       } catch (err) {
         console.error('Error loading home data:', err);
@@ -183,7 +184,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, onViewProduct }) => {
             onClick={() => onNavigate('products')}
             className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-red-400 hover:text-red-300 transition-colors shrink-0"
           >
-            <span>Lihat Semua Produk</span>
+            <span>Lihat Semua Koleksi ({totalProductsCount} Produk)</span>
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>

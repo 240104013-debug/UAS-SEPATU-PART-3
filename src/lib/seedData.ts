@@ -31,6 +31,7 @@ export const INITIAL_CATEGORIES: Category[] = [
   }
 ];
 
+// FULL 10 PRODUCTS (Tidak dibatasi 6)
 export const INITIAL_PRODUCTS: Product[] = [
   {
     id: 'prod-nike-alphafly',
@@ -109,6 +110,58 @@ export const INITIAL_PRODUCTS: Product[] = [
     colors: ['Core Black / Solar Red / White', 'Team Red / Metallic Black'],
     image_url: '/src/assets/images/product_soccer_cleats_1793759790770.jpg',
     is_featured: false,
+  },
+  {
+    id: 'prod-nike-gt-cut',
+    category_id: 'cat-basketball',
+    name: 'Nike G.T. Cut 3 EP Basketball Pro',
+    brand: 'Nike',
+    description: 'Sepatu basket berkecepatan tinggi dengan busa ZoomX penuh pertama pada lini basket. Memaksimalkan daya lepas landas saat melakukan crossover dan step-back jumper.',
+    price: 2999000,
+    stock: 14,
+    sizes: [40, 41, 42, 43, 44, 45],
+    colors: ['Hitam / Crimson Red', 'Triple White', 'Volt Lime'],
+    image_url: '/src/assets/images/product_basketball_shoe_1793759790682.jpg',
+    is_featured: true,
+  },
+  {
+    id: 'prod-puma-nitro-elite',
+    category_id: 'cat-running',
+    name: 'Puma Deviate Nitro Elite 2 Marathon',
+    brand: 'Puma',
+    description: 'Super-shoe berbobot ultra-ringan dengan pelat karbon INNOPLATE dan bantalan gas nitrogen NITRO Elite. Didesain untuk pelari maraton yang mengincar waktu terbaik personal (PB).',
+    price: 2799000,
+    stock: 16,
+    sizes: [39, 40, 41, 42, 43, 44],
+    colors: ['Fire Red / Puma Black', 'White Nitro', 'Black Stealth'],
+    image_url: '/src/assets/images/product_running_shoe_1793759789134.jpg',
+    is_featured: false,
+  },
+  {
+    id: 'prod-ua-project-rock',
+    category_id: 'cat-training',
+    name: 'Under Armour Project Rock 6 Training',
+    brand: 'Under Armour',
+    description: 'Sepatu training seri Dwayne Johnson dengan bantalan responsif UA HOVR, klip tumit TPU kokoh untuk latihan beban berat, dan upper UA Clone yang menyesuaikan bentuk kaki.',
+    price: 2499000,
+    stock: 11,
+    sizes: [40, 41, 42, 43, 44],
+    colors: ['Black / Red Bull', 'Pitch Gray / White'],
+    image_url: '/src/assets/images/product_trainer_sneaker_1793759790756.jpg',
+    is_featured: false,
+  },
+  {
+    id: 'prod-adidas-copa-pure',
+    category_id: 'cat-football',
+    name: 'Adidas Copa Pure 2 Elite FG Leather',
+    brand: 'Adidas',
+    description: 'Sentuhan bola murni klasik dengan balutan kulit Fusionskin premium dan sol Torsionframe ringan. Sangat nyaman untuk gelandang dan pemain yang mengutamakan sentuhan bola sempurna.',
+    price: 3199000,
+    stock: 10,
+    sizes: [39, 40, 41, 42, 43, 44],
+    colors: ['Blackout / Solar Red Trim', 'Pure White / Core Black'],
+    image_url: '/src/assets/images/hero_sports_shoes_1793759787842.jpg',
+    is_featured: false,
   }
 ];
 
@@ -116,7 +169,7 @@ export const INITIAL_FAQS: FAQ[] = [
   {
     id: 'faq-1',
     question: 'Apakah produk di Toko Sepatu Olahraga Rizal 100% Original?',
-    answer: 'Ya, seluruh produk sepatu di Toko Sepatu Olahraga Rizal dijamin 100% Original bergaransi resmi. Kami bekerjasama langsung dengan distributor resmi Nike, Adidas, Puma, dan Jordan di Indonesia.',
+    answer: 'Ya, seluruh produk sepatu di Toko Sepatu Olahraga Rizal dijamin 100% Original bergaransi resmi. Kami bekerjasama langsung dengan distributor resmi Nike, Adidas, Puma, Under Armour, dan Jordan di Indonesia.',
     category: 'Produk'
   },
   {
@@ -145,7 +198,7 @@ export const INITIAL_FAQS: FAQ[] = [
   }
 ];
 
-export const SUPABASE_SQL_SETUP = `-- SKEMA SQL LENGKAP UNTUK TOKO SEPATU OLAHRAGA RIZAL
+export const SUPABASE_SQL_SETUP = `-- SKEMA SQL LENGKAP UNTUK TOKO SEPATU OLAHRAGA RIZAL (10 PRODUK)
 -- Salin dan jalankan seluruh script ini di Supabase Dashboard -> SQL Editor
 
 -- 1. Buat Tabel Categories
@@ -244,17 +297,35 @@ VALUES
 ('cat-basketball', 'Basketball', 'basketball', 'Sepatu basket dengan dukungan ankle superior.', '/src/assets/images/product_basketball_shoe_1793759790682.jpg'),
 ('cat-football', 'Sepak Bola & Futsal', 'football', 'Sepatu bola dan futsal ringan dengan traksi aerodinamis.', '/src/assets/images/product_soccer_cleats_1793759790770.jpg'),
 ('cat-training', 'Training & Gym', 'training', 'Sepatu latihan multi-fungsi dengan stabilitas lateral.', '/src/assets/images/product_trainer_sneaker_1793759790756.jpg')
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (id) DO UPDATE SET
+  name = EXCLUDED.name,
+  description = EXCLUDED.description,
+  image_url = EXCLUDED.image_url;
 
--- SEED DATA AWAL (PRODUK)
+-- SEED DATA AWAL (SEMUA 10 PRODUK)
 INSERT INTO public.products (id, category_id, name, brand, description, price, stock, sizes, colors, image_url, is_featured)
 VALUES
 ('prod-nike-alphafly', 'cat-running', 'Nike Air Zoom Alphafly Next% 3 Elite', 'Nike', 'Sepatu lari kompetisi rekor dunia maraton dengan kombinasi busa ZoomX ultra-ringan.', 3899000, 12, '{40,41,42,43,44,45}', '{"Hitam / Crimson Red","Putih / Merah Balap","All Black Stealth"}', '/src/assets/images/product_running_shoe_1793759789134.jpg', true),
 ('prod-jordan-retro-high', 'cat-basketball', 'Air Jordan 6 Retro "Bred Inferno"', 'Jordan', 'Ikon lapangan basket legendaris dengan material kulit premium bertekstur.', 3299000, 8, '{40,41,42,43,44}', '{"Hitam / Merah Banteng","Black Infrared","Triple White"}', '/src/assets/images/product_basketball_shoe_1793759790682.jpg', true),
 ('prod-nike-mercurial', 'cat-football', 'Nike Zoom Mercurial Superfly 9 Elite FG', 'Nike', 'Sepatu bola level profesional dengan unit 3/4 Zoom Air khusus lapangan rumput.', 3699000, 15, '{39,40,41,42,43,44}', '{"Hitam / Fiery Crimson / Perak Krom","Merah Laser / Hitam"}', '/src/assets/images/product_soccer_cleats_1793759790770.jpg', true),
 ('prod-adidas-ultrarunner', 'cat-running', 'Adidas Ultra Runner Boost 24 Sport', 'Adidas', 'Kenyamanan tanpa tanding dengan sol midsole Light Boost yang 30% lebih ringan.', 2899000, 20, '{39,40,41,42,43,44,45}', '{"Hitam Karbon / Merah Aktif","Core Black / Cloud White"}', '/src/assets/images/hero_sports_shoes_1793759787842.jpg', true),
-('prod-puma-train-max', 'cat-training', 'Puma FUSE 2.0 Apex Trainer', 'Puma', 'Didesain bersama atlet angkat beban dunia. Sol karet PUMAGRIP berdaya tahan ekstrem.', 1999000, 18, '{40,41,42,43,44}', '{"Anthracite / Flame Red","Black Smoke / Pure White"}', '/src/assets/images/product_trainer_sneaker_1793759790756.jpg', false)
-ON CONFLICT (id) DO NOTHING;
+('prod-puma-train-max', 'cat-training', 'Puma FUSE 2.0 Apex Trainer', 'Puma', 'Didesain bersama atlet angkat beban dunia. Sol karet PUMAGRIP berdaya tahan ekstrem.', 1999000, 18, '{40,41,42,43,44}', '{"Anthracite / Flame Red","Black Smoke / Pure White"}', '/src/assets/images/product_trainer_sneaker_1793759790756.jpg', false),
+('prod-adidas-predator-pro', 'cat-football', 'Adidas Predator Accuracy+ FG Elite', 'Adidas', 'Dirancang untuk akurasi tembakan mematikan dengan teknologi High Definition Grip.', 3599000, 9, '{40,41,42,43,44}', '{"Core Black / Solar Red / White","Team Red / Metallic Black"}', '/src/assets/images/product_soccer_cleats_1793759790770.jpg', false),
+('prod-nike-gt-cut', 'cat-basketball', 'Nike G.T. Cut 3 EP Basketball Pro', 'Nike', 'Sepatu basket berkecepatan tinggi dengan busa ZoomX penuh pertama pada lini basket.', 2999000, 14, '{40,41,42,43,44,45}', '{"Hitam / Crimson Red","Triple White","Volt Lime"}', '/src/assets/images/product_basketball_shoe_1793759790682.jpg', true),
+('prod-puma-nitro-elite', 'cat-running', 'Puma Deviate Nitro Elite 2 Marathon', 'Puma', 'Super-shoe berbobot ultra-ringan dengan pelat karbon INNOPLATE dan bantalan gas nitrogen NITRO Elite.', 2799000, 16, '{39,40,41,42,43,44}', '{"Fire Red / Puma Black","White Nitro","Black Stealth"}', '/src/assets/images/product_running_shoe_1793759789134.jpg', false),
+('prod-ua-project-rock', 'cat-training', 'Under Armour Project Rock 6 Training', 'Under Armour', 'Sepatu training seri Dwayne Johnson dengan bantalan responsif UA HOVR.', 2499000, 11, '{40,41,42,43,44}', '{"Black / Red Bull","Pitch Gray / White"}', '/src/assets/images/product_trainer_sneaker_1793759790756.jpg', false),
+('prod-adidas-copa-pure', 'cat-football', 'Adidas Copa Pure 2 Elite FG Leather', 'Adidas', 'Sentuhan bola murni klasik dengan balutan kulit Fusionskin premium dan sol Torsionframe ringan.', 3199000, 10, '{39,40,41,42,43,44}', '{"Blackout / Solar Red Trim","Pure White / Core Black"}', '/src/assets/images/hero_sports_shoes_1793759787842.jpg', false)
+ON CONFLICT (id) DO UPDATE SET
+  category_id = EXCLUDED.category_id,
+  name = EXCLUDED.name,
+  brand = EXCLUDED.brand,
+  description = EXCLUDED.description,
+  price = EXCLUDED.price,
+  stock = EXCLUDED.stock,
+  sizes = EXCLUDED.sizes,
+  colors = EXCLUDED.colors,
+  image_url = EXCLUDED.image_url,
+  is_featured = EXCLUDED.is_featured;
 
 -- SEED DATA AWAL (FAQS)
 INSERT INTO public.faqs (id, question, answer, category)

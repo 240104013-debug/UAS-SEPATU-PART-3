@@ -128,10 +128,9 @@ export const Chatbot: React.FC<ChatbotProps> = ({ onSelectProduct, onNavigateToP
     // Specific product match
     const candidateProducts = foundByName.length > 0 ? foundByName : foundByBrand;
     if (candidateProducts.length > 0) {
-      const topProducts = candidateProducts.slice(0, 4);
       return {
-        reply: `Ditemukan produk yang sesuai di database kami:`,
-        matchedProducts: topProducts
+        reply: `Ditemukan ${candidateProducts.length} produk yang sesuai di database kami:`,
+        matchedProducts: candidateProducts
       };
     }
 
